@@ -99,7 +99,7 @@ RUN a2enmod headers && \
         /graph-explorer/config.py
 
 RUN apt-get install -y cron && \
-    echo "* * * * * /graph-explorer/update_metrics.py &>/dev/null" > /etc/cron.d/graph-explorer
+    echo "* * * * * root /graph-explorer/update_metrics.py &>/dev/null" > /etc/cron.d/graph-explorer
 
 
 ADD ./ docker-graphite
