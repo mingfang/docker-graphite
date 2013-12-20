@@ -1,1 +1,1 @@
-docker run -p 49185:80 -p 49186:8080 -p 49003:2003 -i -t graphite /bin/bash
+docker run -p 49185:80 -p 49186:8080 -i -t graphite /bin/bash

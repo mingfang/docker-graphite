@@ -66,45 +66,16 @@ RUN cd /opt/graphite && \
     cp /opt/graphite/conf/graphite.wsgi.example /opt/graphite/conf/graphite.wsgi && \
     cd /opt/graphite/webapp/graphite && \
     cp local_settings.py.example local_settings.py && \
-    mkdir /var/run/apache2 && \
     chown -R www-data:www-data /var/run/apache2/
-
-#Graph Explorer
-RUN git clone --recursive https://github.com/vimeo/graph-explorer.git
-
-#ElasticSearch
-RUN wget https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-0.90.7.tar.gz && \
-    tar xf elasticsearch-*.tar.gz && \
-    rm elasticsearch-*.tar.gz && \
-    mv elasticsearch-* elasticsearch
-
-#Install Oracle Java 7
-RUN echo 'deb http://ppa.launchpad.net/webupd8team/java/ubuntu precise main' > /etc/apt/sources.list.d/java.list && \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886 && \
-    apt-get update && \
-    echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -y oracle-java7-installer
-
 
 #Initialize MySQL
 RUN cd /opt/graphite/webapp/graphite/ && \
     python manage.py syncdb --noinput && \
     chown -R www-data:www-data /opt/graphite/storage/
 
-#Configure Apache for CORS
-RUN a2enmod headers && \
-    sed -i -e 's|</VirtualHost>|Header set Access-Control-Allow-Origin "*"\nHeader set Access-Control-Allow-Methods "GET, OPTIONS, POST"\nHeader set Access-Control-Allow-Headers "origin, authorization, accept"\n</VirtualHost>|' \
-        /etc/apache2/sites-enabled/000-default && \
-    sed -i -e 's|http://graphite.machine.dns|http://:49185|' \
-        /graph-explorer/config.py
-
-RUN apt-get install -y cron && \
-    echo "* * * * * root /graph-explorer/update_metrics.py &>/dev/null" > /etc/cron.d/graph-explorer
-
-
 ADD ./ docker-graphite
 RUN cd /docker-graphite && \
     cp supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-EXPOSE 22 80 2003
+EXPOSE 22 80
 
